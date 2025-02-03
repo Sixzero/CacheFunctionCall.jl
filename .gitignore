@@ -1,4 +1,5 @@
 .cache/*
+!.cache/.gitkeep
 
 *.jl.*.cov
 *.jl.cov
