@@ -1,4 +1,4 @@
-.cache
+.cache/*
 
 *.jl.*.cov
 *.jl.cov
