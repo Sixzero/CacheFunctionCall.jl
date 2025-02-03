@@ -12,9 +12,11 @@ Pkg.add("CacheFunctionCall")
 ```julia
 using CacheFunctionCall
 
-# Cache function call
+# Basic usage
 @cache_call myfunction(1, 2; c=3)
-
-# Later, load the cached arguments
 fn, args, kwargs = cache_loadcall(myfunction)
+
+# With scope
+@cache_call "case1" myfunction(1, 2; c=3)
+fn, args, kwargs = cache_loadcall(myfunction, "case1")
 ```

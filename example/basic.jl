@@ -4,23 +4,25 @@
 using CacheFunctionCall
 
 function myfunction(a, b; c=10)
-  println("Inside myfunction: a = $a, b = $b, c = $c")
-  return a + b + c
+    println("Inside myfunction: a = $a, b = $b, c = $c")
+    return a + b + c
 end
 
-# Use the macro to “cache” the call. This will:
-#  1. Write the call parameters to a file named "cache_myfunction.jls".
-#  2. Execute myfunction(1, 2; c=3) and return its result.
-result = @cache_call myfunction(1, 2; c=3)
-println("Result from cached call: ", result)
+# Cache with default scope
+result1 = @cache_call myfunction(1, 2; c=3)
+println("Result from default cached call: ", result1)
 
-# Later (or in a different session) you can load the cached call:
-fn, args, kwargs = cache_loadcall(myfunction)
-println("Loaded call parameters:")
-println("  Function: ", fn)
-println("  Positional args: ", args)
-println("  Keyword args: ", kwargs)
+# Cache with custom scope
+result2 = @cache_call "case1" myfunction(2, 3; c=4)
+println("Result from case1 cached call: ", result2)
 
-# You can then re-run the call (or use it however you need):
-result2 = fn(args...; kwargs...)
-println("Result from re-running the loaded call: ", result2)
+# Load different scopes
+fn1, args1, kwargs1 = cache_loadcall(myfunction)  # default scope
+println("Default scope parameters:")
+println("  Args: ", args1)
+println("  Kwargs: ", kwargs1)
+
+fn2, args2, kwargs2 = cache_loadcall(myfunction, "case1")
+println("Case1 scope parameters:")
+println("  Args: ", args2)
+println("  Kwargs: ", kwargs2)
