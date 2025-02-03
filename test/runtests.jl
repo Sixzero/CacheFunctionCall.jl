@@ -46,8 +46,6 @@ using Aqua
         fn, args, kwargs = cache_loadcall(f4)
         @test kwargs == Dict(:y => 5)
         @test fn(; kwargs...) == 5
-
-        
     end
 
     @testset "Error handling" begin
@@ -58,7 +56,8 @@ using Aqua
         @test_throws LoadError @eval @cache_call begin end  # This will cause LoadError
     end
 
-    # Cleanup cache directory
-    rm(CacheFunctionCall.CACHE_DIR, force=true, recursive=true)
+    # Cleanup cache files but keep .gitkeep
+    for file in readdir(CacheFunctionCall.CACHE_DIR)
+        endswith(file, ".cache") && rm(joinpath(CacheFunctionCall.CACHE_DIR, file))
+    end
 end
-;
