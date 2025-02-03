@@ -1,3 +1,5 @@
+.cache
+
 *.jl.*.cov
 *.jl.cov
 *.jl.mem
