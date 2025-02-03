@@ -37,6 +37,17 @@ using Aqua
         @test args == [1]
         @test kwargs == Dict(:y => 2)
         @test fn(args...; kwargs...) == 3
+
+        # Test kwargs with symbol only (no explicit value)
+        y = 5
+        f4(; y=1) = y
+        result = @cache_call f4(; y)  # passing just the symbol y
+        @test result == 5
+        fn, args, kwargs = cache_loadcall(f4)
+        @test kwargs == Dict(:y => 5)
+        @test fn(; kwargs...) == 5
+
+        
     end
 
     @testset "Error handling" begin
