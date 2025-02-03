@@ -43,6 +43,8 @@ using Aqua
         f3(x) = x
         @test_throws ErrorException cache_loadcall(:nonexistent_fn)
         @test_throws ErrorException cache_loadcall(f3, "nonexistent_scope")
+        # Test non-function call expression by trying to parse invalid syntax
+        @test_throws LoadError @eval @cache_call begin end  # This will cause LoadError
     end
 
     # Cleanup cache directory

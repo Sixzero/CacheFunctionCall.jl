@@ -8,6 +8,18 @@ export @cache_call, cache_loadcall
 const CACHE_DIR = joinpath(@__DIR__, "..", ".cache")
 isdir(CACHE_DIR) || mkpath(CACHE_DIR)
 
+# Helper to create safe filenames
+function safe_cache_filename(fn, scope)
+    fn_str = string(fn)
+    # Check if filename would be valid
+    if all(c -> !occursin(c, "*?<>:|/\\\"'`\0\r\n\t") && !isspace(c), fn_str)
+        base = fn_str
+    else
+        base = string(hash(fn_str), base=16)[1:8]
+    end
+    return joinpath(CACHE_DIR, "$(base)_$(scope)_call.cache")
+end
+
 """
     @cache_call [scope] function_call
     
@@ -41,14 +53,13 @@ macro cache_call(args...)
         posargs = args
     end
     
-    cache_file = joinpath(CACHE_DIR, "$(fn)_$(scope)_call.cache")
-    
     return quote
         let fn = $(esc(fn)),
             posargs = $(esc(Expr(:vect, posargs...))),
             kwargs = Dict{Symbol,Any}($(map(k -> :($(QuoteNode(k.args[1])) => $(esc(k.args[2]))), kwargs)...))
             
-            open($cache_file, "w") do io
+            cache_file = safe_cache_filename(fn, $scope)
+            open(cache_file, "w") do io
                 serialize(io, (fn, posargs, kwargs))
             end
             fn(posargs...; kwargs...)
@@ -62,7 +73,7 @@ end
 Loads the cached function call arguments for the given function and scope.
 """
 function cache_loadcall(fn, scope="default")
-    cache_file = joinpath(CACHE_DIR, "$(fn)_$(scope)_call.cache")
+    cache_file = safe_cache_filename(fn, scope)
     !isfile(cache_file) && error("No cached call found for function $fn with scope $scope")
     open(cache_file) do io
         deserialize(io)
