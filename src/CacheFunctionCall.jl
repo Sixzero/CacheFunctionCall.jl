@@ -11,12 +11,8 @@ isdir(CACHE_DIR) || mkpath(CACHE_DIR)
 # Helper to create safe filenames
 function safe_cache_filename(fn, scope)
     fn_str = string(fn)
-    # Check if filename would be valid
-    if all(c -> !occursin(c, "*?<>:|/\\\"'`\0\r\n\t") && !isspace(c), fn_str)
-        base = fn_str
-    else
-        base = string(hash(fn_str), base=16)[1:8]
-    end
+    # TODO: Check if filename would be valid
+    base = fn_str
     return joinpath(CACHE_DIR, "$(base)_$(scope)_call.cache")
 end
 
