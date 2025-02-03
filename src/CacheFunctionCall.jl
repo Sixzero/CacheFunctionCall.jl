@@ -49,10 +49,19 @@ macro cache_call(args...)
         posargs = args
     end
     
+    # Convert kwargs to Dict pairs, handling both Symbol and Expr
+    kwargs_pairs = map(k -> begin
+        if k isa Expr
+            :($(QuoteNode(k.args[1])) => $(esc(k.args[2])))
+        else
+            :($(QuoteNode(k)) => $(esc(k)))
+        end
+    end, kwargs)
+    
     return quote
         let fn = $(esc(fn)),
             posargs = $(esc(Expr(:vect, posargs...))),
-            kwargs = Dict{Symbol,Any}($(map(k -> :($(QuoteNode(k.args[1])) => $(esc(k.args[2]))), kwargs)...))
+            kwargs = Dict{Symbol,Any}($(kwargs_pairs...))
             
             cache_file = safe_cache_filename(fn, $scope)
             open(cache_file, "w") do io

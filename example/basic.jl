@@ -26,3 +26,14 @@ fn2, args2, kwargs2 = cache_loadcall(myfunction, "case1")
 println("Case1 scope parameters:")
 println("  Args: ", args2)
 println("  Kwargs: ", kwargs2)
+#%%
+using PromptingTools: UserMessage
+
+api_kwargs = (; )
+@cache_call aigenerate(
+            [UserMessage("Hello, how are you?")];
+            model="claude",
+            cache=:all_but_last, 
+            api_kwargs,
+            verbose=false
+        )
