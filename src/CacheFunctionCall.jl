@@ -9,13 +9,22 @@ const CACHE_DIR = joinpath(@__DIR__, "..", ".cache")
 isdir(CACHE_DIR) || mkpath(CACHE_DIR)
 
 """
-    @cache_call function_call
+    @cache_call [scope] function_call
     
-Caches a function call and its arguments to a file.
+Caches a function call and its arguments to a file with optional scope name.
 Example:
     @cache_call myfunction(arg1, arg2; kwarg1=1)
+    @cache_call "case1" myfunction(arg1, arg2; kwarg1=1)
 """
-macro cache_call(expr)
+macro cache_call(args...)
+    if length(args) == 1
+        scope = "default"
+        expr = args[1]
+    else
+        scope = args[1]
+        expr = args[2]
+    end
+
     if expr.head != :call
         error("Expression must be a function call")
     end
@@ -32,7 +41,7 @@ macro cache_call(expr)
         posargs = args
     end
     
-    cache_file = joinpath(CACHE_DIR, "$(fn)_call.cache")
+    cache_file = joinpath(CACHE_DIR, "$(fn)_$(scope)_call.cache")
     
     return quote
         let fn = $(esc(fn)),
@@ -48,13 +57,13 @@ macro cache_call(expr)
 end
 
 """
-    cache_loadcall(fn) -> (function, args, kwargs)
+    cache_loadcall(fn, scope="default") -> (function, args, kwargs)
 
-Loads the cached function call arguments for the given function.
+Loads the cached function call arguments for the given function and scope.
 """
-function cache_loadcall(fn)
-    cache_file = joinpath(CACHE_DIR, "$(fn)_call.cache")
-    !isfile(cache_file) && error("No cached call found for function $fn")
+function cache_loadcall(fn, scope="default")
+    cache_file = joinpath(CACHE_DIR, "$(fn)_$(scope)_call.cache")
+    !isfile(cache_file) && error("No cached call found for function $fn with scope $scope")
     open(cache_file) do io
         deserialize(io)
     end
